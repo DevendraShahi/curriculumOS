@@ -1,0 +1,9 @@
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/api/v1/playground/templates/route": "app/api/v1/playground/templates/route.js",
+  "/api/v1/playground/sessions/route": "app/api/v1/playground/sessions/route.js",
+  "/api/v1/playground/sessions/[sessionId]/runs/route": "app/api/v1/playground/sessions/[sessionId]/runs/route.js",
+  "/page": "app/page.js",
+  "/playground/sandbox/page": "app/playground/sandbox/page.js",
+  "/community/tags/page": "app/community/tags/page.js"
+}

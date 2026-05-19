@@ -1,0 +1,49 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src tests --cache --cache-location .next/cache/eslint/",
+    "lint:full": "eslint . --cache --cache-location .next/cache/eslint/",
+    "db:setup": "node --env-file=.env.local scripts/setup-data-layer.cjs",
+    "db:seed": "node --env-file=.env.local scripts/seed-curriculum.cjs",
+    "db:seed:reset": "node --env-file=.env.local scripts/seed-curriculum.cjs --reset",
+    "db:seed:activity": "node --env-file=.env.local scripts/seed-progress-activity.cjs",
+    "db:reset": "node --env-file=.env.local scripts/reset-curriculum.cjs --confirm",
+    "db:backfill:progress-events": "node --env-file=.env.local scripts/backfill-progress-events.cjs",
+    "db:backfill:relation-refs": "node --env-file=.env.local scripts/backfill-relation-refs.cjs",
+    "db:backfill:playground-validation-rules": "node --env-file=.env.local scripts/backfill-playground-validation-rules.cjs",
+    "test:integration:metrics": "node --experimental-strip-types --test tests/integration/progress-metrics.integration.test.mjs",
+    "test:integration:progress-api": "node --env-file=.env.local --test tests/integration/progress-api.integration.test.mjs",
+    "test:integration:quiz-api": "node --env-file=.env.local --test tests/integration/quiz-api.integration.test.mjs",
+    "test:integration:playground-api": "npm run build && node --env-file=.env.local --test tests/integration/playground-api.integration.test.mjs",
+    "test:integration:community-api": "npm run build && node --env-file=.env.local --test tests/integration/community-api.integration.test.mjs",
+    "test:integration:courses-api": "npm run build && node --env-file=.env.local --test tests/integration/courses-api.integration.test.mjs",
+    "test:integration:course-detail-syllabus": "npm run build && node --env-file=.env.local --test tests/integration/course-detail-syllabus.integration.test.mjs",
+    "test:integration:dashboard-home": "npm run build && node --env-file=.env.local --test tests/integration/dashboard-home.integration.test.mjs",
+    "test:integration:project-submissions": "npm run build && node --env-file=.env.local --test tests/integration/project-submissions.integration.test.mjs",
+    "test:integration:profile-overview": "npm run build && node --env-file=.env.local --test tests/integration/profile-overview.integration.test.mjs",
+    "test:integration:notifications-leads": "npm run build && node --env-file=.env.local --test tests/integration/notifications-leads.integration.test.mjs"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^7.3.5",
+    "cloudinary": "^2.10.0",
+    "mongodb": "^7.2.0",
+    "next": "^15.1.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
