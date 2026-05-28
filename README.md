@@ -1,4 +1,4 @@
-# Curriculum.OS Web
+ # Curriculum.OS Web
 
 Curriculum.OS Web is the learning operating system layer for curriculum delivery, focused practice, project execution, and progress intelligence.
 
@@ -67,3 +67,7 @@ Curriculum.OS Web is the learning operating system layer for curriculum delivery
 - Playground UX and runtime pipeline are substantially implemented and validated in integration tests.
 - Mobile responsiveness is completed for key sandbox interactions.
 - Run evaluation and validation rules are now first-class product features rather than placeholder metrics.
+
+# curriculum.os
+
+# curriculum.os
