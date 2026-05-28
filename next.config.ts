@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
-import path from "path";
-
-const isNextDevCommand = process.argv.includes("dev");
-const isDevelopment = process.env.NODE_ENV === "development" || isNextDevCommand;
 
 const nextConfig: NextConfig = {
-  // Keep dev and production build artifacts isolated to avoid mixed chunk graphs.
-  distDir: isDevelopment ? ".next-dev" : ".next",
-  outputFileTracingRoot: path.join(__dirname, "..", ".."),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "img.clerk.com" },
