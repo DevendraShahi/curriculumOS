@@ -4,6 +4,7 @@ import { Show, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/ne
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ThemeToggle } from "./theme-toggle";
 
 type NavChild = {
   label: string;
@@ -383,6 +384,8 @@ export function Navbar() {
               <line x1="12" x2="20" y1="19" y2="19"/>
             </svg>
           </button>
+
+          <ThemeToggle />
 
           <Show when="signed-out">
             <SignInButton mode="redirect">

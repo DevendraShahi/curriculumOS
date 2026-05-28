@@ -20,6 +20,10 @@ const COURSE_CARD_IMAGE_BY_SLUG: Record<string, CourseCardImageConfig> = {
     src: "/courses/COMPUTER-SCIENCE-ESSENTIALS.png",
     objectPosition: "center 36%",
   },
+  "mastering-css-foundations-to-production-systems": {
+    src: "https://res.cloudinary.com/dpxyyaefk/image/upload/v1779819822/curriculum-os/css/course-thumbnail.jpg",
+    objectPosition: "center 42%",
+  },
 };
 
 const DEFAULT_COURSE_CARD_IMAGE: CourseCardImageConfig = {
@@ -41,4 +45,19 @@ export function getCourseCardImage(
 ): CourseCardImageConfig {
   if (!slug) return DEFAULT_COURSE_CARD_IMAGE;
   return COURSE_CARD_IMAGE_BY_SLUG[slug] ?? DEFAULT_COURSE_CARD_IMAGE;
+}
+
+export function resolveCourseCardImage(params: {
+  slug?: string | null;
+  imageUrl?: string | null;
+}): CourseCardImageConfig {
+  const remoteImage = params.imageUrl?.trim();
+  if (remoteImage) {
+    return {
+      src: remoteImage,
+      objectPosition: "center 42%",
+    };
+  }
+
+  return getCourseCardImage(params.slug);
 }

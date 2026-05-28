@@ -279,7 +279,7 @@ export default function QuizPage() {
               <section key={question.index} className="border border-[var(--border)] bg-[var(--surface)]">
                 <div className="border-b border-[var(--border)] px-5 py-4">
                   <h2 className="text-base font-medium text-[var(--foreground)] tracking-tight">
-                    Q{questionIndex + 1}. {question.prompt}
+                    Q{questionIndex + 1}. {question.prompt || (question as Record<string, unknown>).question as string}
                   </h2>
                 </div>
 

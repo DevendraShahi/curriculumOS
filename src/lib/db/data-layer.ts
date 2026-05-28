@@ -604,6 +604,24 @@ const DATA_LAYER_PLAN: CollectionPlan[] = [
       },
     ],
   },
+  {
+    collection: COLLECTIONS.rubrics,
+    indexes: [
+      {
+        key: { tenantId: 1, courseId: 1, slug: 1 },
+        options: { name: "uq_rubrics_tenant_course_slug", unique: true },
+      },
+    ],
+  },
+  {
+    collection: COLLECTIONS.capstones,
+    indexes: [
+      {
+        key: { tenantId: 1, courseId: 1, slug: 1 },
+        options: { name: "uq_capstones_tenant_course_slug", unique: true },
+      },
+    ],
+  },
 ];
 
 export async function ensureDataLayerCollections(db: Db): Promise<string[]> {

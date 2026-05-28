@@ -13,6 +13,8 @@ export type UserRole =
   | "tenant_admin"
   | "super_admin";
 
+export type SubscriptionPlan = "free" | "pro" | "teams";
+
 export type UserDocument = TenantScoped & {
   _id: ObjectId;
   clerkUserId: string;
@@ -30,6 +32,7 @@ export type UserDocument = TenantScoped & {
   unsafeMetadata?: Record<string, unknown>;
   lastSignInAt?: Date;
   disabledAt?: Date | null;
+  plan?: SubscriptionPlan;
 };
 
 export type UserPreferenceFlags = {
@@ -53,6 +56,8 @@ export type CourseDocument = TenantScoped & {
   title: string;
   summary: string;
   description?: string;
+  imageUrl?: string;
+  videoUrl?: string;
   category?: string;
   level?: "beginner" | "intermediate" | "advanced";
   tags?: string[];
@@ -63,6 +68,10 @@ export type CourseDocument = TenantScoped & {
   lessonsCount: number;
   durationMinutes: number;
   publishedAt?: Date | null;
+  track?: string;
+  language?: string;
+  contentVersion?: string;
+  tier?: SubscriptionPlan;
 };
 
 export type ModuleDocument = TenantScoped & {
@@ -85,8 +94,56 @@ export type LessonStarterFile = {
   content: string;
 };
 
+export type DOMValidationRule = {
+  type: "hasTag" | "hasAttribute" | "notHasAttribute" | "regex";
+  tag?: string;
+  attribute?: string;
+  value?: string;
+  pattern?: string;
+  message: string;
+};
+
+export type LessonExercise = {
+  id: string;
+  type: string;
+  task: string;
+  instructions: string;
+  starterCode: string;
+  solutionCode?: string;
+  hints?: string[];
+  validationRules: DOMValidationRule[];
+};
+
+export type LessonResourceExternal = {
+  id?: string;
+  title?: string;
+  url?: string;
+  kind?: "link" | "download" | "doc" | "repo" | "video";
+  downloadable?: boolean;
+  fileName?: string;
+  description?: string;
+};
+
+export type LessonResourceEvaluationNotes = {
+  scoringDimensions?: string[];
+  atRisk?: string;
+  competent?: string;
+  excellent?: string;
+};
+
+export type LessonResources = {
+  teachingFocus?: string[];
+  teachingAids?: string[];
+  resourcePrompts?: string[];
+  learnerReference?: string[];
+  instructorNotes?: string[];
+  externalResources?: LessonResourceExternal[];
+  evaluationNotes?: LessonResourceEvaluationNotes;
+};
+
 export type LessonDocument = TenantScoped & {
   _id: ObjectId;
+  id: string;
   courseId: ObjectId;
   moduleId: ObjectId;
   slug: string;
@@ -99,10 +156,16 @@ export type LessonDocument = TenantScoped & {
   isPreview: boolean;
   isPublished: boolean;
   learningObjectives?: string[];
+  outcomes?: string[];
+  prerequisites?: string[];
   instructions?: string[];
   bodyMarkdown?: string;
+  videoUrl?: string;
+  videoProvider?: "youtube" | "vimeo" | "loom" | "wistia" | "mux";
   starterFiles?: LessonStarterFile[];
-  expectedOutput?: string[];
+  expectedOutput?: string | string[];
+  exercises?: LessonExercise[];
+  resources?: LessonResources;
 };
 
 export type ProjectStatus = "published" | "archived";
@@ -111,15 +174,35 @@ export type ProjectDocument = TenantScoped & {
   _id: ObjectId;
   courseId: ObjectId;
   moduleId: ObjectId;
-  lessonId: ObjectId;
+  lessonId?: ObjectId | string;
   slug: string;
   title: string;
+  bodyMarkdown: string;
   summary?: string;
-  order: number;
-  estimatedMinutes: number;
-  isPublished: boolean;
-  status: ProjectStatus;
-  rubric: string[];
+  order?: number;
+  estimatedMinutes?: number;
+  isPublished?: boolean;
+  status?: ProjectStatus;
+  rubric?: string[];
+};
+
+export type CapstoneDocument = TenantScoped & {
+  _id: ObjectId;
+  courseId: ObjectId;
+  moduleId: ObjectId | string;
+  slug: string;
+  title: string;
+  bodyMarkdown: string;
+  isPublished?: boolean;
+};
+
+export type RubricDocument = TenantScoped & {
+  _id: ObjectId;
+  courseId: ObjectId;
+  moduleId: ObjectId | string;
+  slug: string;
+  title: string;
+  bodyMarkdown: string;
 };
 
 export type ProjectSubmissionStatus =
@@ -133,7 +216,7 @@ export type ProjectSubmissionDocument = TenantScoped & {
   userId: ObjectId;
   courseId: ObjectId;
   moduleId: ObjectId;
-  lessonId: ObjectId;
+  lessonId?: ObjectId | string;
   projectId: ObjectId;
   enrollmentId?: ObjectId | null;
   idempotencyKey?: string;
@@ -154,8 +237,10 @@ export type QuizStatus = "published" | "archived";
 
 export type QuizQuestion = {
   prompt: string;
+  question?: string;
   options: string[];
   answerIndex: number;
+  correctOption?: number;
   explanation?: string;
 };
 
@@ -163,7 +248,7 @@ export type QuizDocument = TenantScoped & {
   _id: ObjectId;
   courseId: ObjectId;
   moduleId: ObjectId;
-  lessonId: ObjectId;
+  lessonId: ObjectId | string;
   slug: string;
   title: string;
   summary?: string;
@@ -511,4 +596,46 @@ export type SubmissionEventDocument = TenantScoped & {
   toStatus?: ProjectSubmissionStatus | null;
   note?: string;
   occurredAt: Date;
+};
+
+export type SandboxSessionDocument = {
+  _id: ObjectId;
+  userId: string;
+  lessonId: string;
+  exerciseId: string;
+  files: {
+    id: string;
+    name: string;
+    language: string;
+    value: string;
+  }[];
+  openFileIds: string[];
+  activeFileId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type TeamDocument = TenantScoped & {
+  _id: ObjectId;
+  name: string;
+  slug: string;
+  description?: string;
+  ownerId: ObjectId;
+  memberIds: ObjectId[];
+  isActive: boolean;
+};
+
+export type ClassSessionStatus = "upcoming" | "active" | "completed" | "archived";
+
+export type ClassSessionDocument = TenantScoped & {
+  _id: ObjectId;
+  courseId: ObjectId;
+  teamId?: ObjectId | null;
+  name: string;
+  slug: string;
+  instructorIds: ObjectId[];
+  studentIds: ObjectId[];
+  status: ClassSessionStatus;
+  startDate?: Date | null;
+  endDate?: Date | null;
 };

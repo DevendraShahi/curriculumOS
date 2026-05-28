@@ -1,11 +1,11 @@
 import { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { fetchCourses, fetchCoursesCatalog } from "@/lib/api";
-import {
-  COURSE_CARD_IMAGE_SIZES,
-  getCourseCardImage,
-} from "@/lib/course-card-image";
+import { resolveCourseCardImage } from "@/lib/course-card-image";
+import { ContourBackground } from "@/components/ui/ContourBackground";
+import { DitheringCourseCard } from "@/components/ui/DitheringCourseCard";
+
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: "Explore Curriculum | CURRICULUM.OS",
@@ -113,8 +113,10 @@ export default async function CurriculumPage({
     .slice(0, 16);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8">
-      <header className="max-w-3xl">
+    <>
+      <ContourBackground />
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8">
+        <header className="max-w-3xl">
         <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)] sm:text-5xl">
           Explore Curriculum
         </h1>
@@ -257,41 +259,13 @@ export default async function CurriculumPage({
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
         {coursesPage.items.map((course) => {
-          const image = getCourseCardImage(course.slug);
+          const image = resolveCourseCardImage({
+            slug: course.slug,
+            imageUrl: course.imageUrl,
+          });
 
           return (
-            <Link
-              href={`/curriculum/${course.slug ?? course.id}`}
-              key={course.id}
-              className="group block outline-none"
-            >
-              <article className="relative flex min-h-[320px] flex-col justify-between overflow-hidden border border-[var(--border)] bg-[var(--surface)] p-5 transition-all group-hover:border-[var(--accent)] group-hover:shadow-sm sm:min-h-[380px] sm:p-8">
-                <Image
-                  src={image.src}
-                  alt={`${course.title} course cover`}
-                  fill
-                  sizes={COURSE_CARD_IMAGE_SIZES.curriculumCard}
-                  style={{ objectPosition: image.objectPosition }}
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/15" />
-
-                <div className="relative z-10 flex justify-end">
-                  <span className="inline-flex items-center border border-white/35 bg-black/35 px-2 py-1 font-mono text-[11px] text-white">
-                    {course.duration}
-                  </span>
-                </div>
-
-                <div className="relative z-10 mt-auto pt-16">
-                  <h2 className="text-xl font-bold uppercase tracking-tight text-white sm:text-2xl">
-                    {course.title}
-                  </h2>
-                  <p className="mt-2 font-mono text-xs tracking-wider text-white/85">
-                    {course.category}
-                  </p>
-                </div>
-              </article>
-            </Link>
+            <DitheringCourseCard key={course.id} course={course} image={image} />
           );
         })}
       </div>
@@ -318,6 +292,7 @@ export default async function CurriculumPage({
           </Link>
         </div>
       ) : null}
-    </main>
+      </main>
+    </>
   );
 }

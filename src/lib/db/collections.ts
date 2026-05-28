@@ -26,6 +26,9 @@ import type {
   UploadDocument,
   UserPreferencesDocument,
   UserDocument,
+  RubricDocument,
+  CapstoneDocument,
+  SandboxSessionDocument,
 } from "@/lib/db/models";
 
 export const COLLECTIONS = {
@@ -55,6 +58,9 @@ export const COLLECTIONS = {
   userPreferences: "user_preferences",
   notifications: "notifications",
   leadCaptures: "lead_captures",
+  rubrics: "rubrics",
+  capstones: "capstones",
+  sandboxSessions: "sandbox_sessions",
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];
@@ -205,4 +211,16 @@ export function notificationsCollection(db: Db): Collection<NotificationDocument
 
 export function leadCapturesCollection(db: Db): Collection<LeadCaptureDocument> {
   return getCollection<LeadCaptureDocument>(db, COLLECTIONS.leadCaptures);
+}
+
+export function rubricsCollection(db: Db): Collection<RubricDocument> {
+  return getCollection<RubricDocument>(db, COLLECTIONS.rubrics);
+}
+
+export function capstonesCollection(db: Db): Collection<CapstoneDocument> {
+  return getCollection<CapstoneDocument>(db, COLLECTIONS.capstones);
+}
+
+export function sandboxSessionsCollection(db: Db): Collection<SandboxSessionDocument> {
+  return getCollection<SandboxSessionDocument>(db, COLLECTIONS.sandboxSessions);
 }

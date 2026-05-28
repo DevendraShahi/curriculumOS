@@ -11,6 +11,7 @@ export interface Course {
   id: string;
   slug?: string;
   title: string;
+  imageUrl?: string | null;
   category: string;
   tags: string[];
   level: "beginner" | "intermediate" | "advanced" | null;
@@ -66,6 +67,7 @@ function mapToUICourse(course: {
   id: string;
   slug: string;
   title: string;
+  imageUrl?: string | null;
   category: string;
   tags?: string[];
   level: "beginner" | "intermediate" | "advanced" | null;
@@ -109,6 +111,7 @@ function mapToUICourse(course: {
     id: course.id,
     slug: course.slug,
     title: course.title,
+    imageUrl: course.imageUrl ?? null,
     category: course.category || "GENERAL",
     tags: course.tags ?? [],
     level: course.level ?? null,
@@ -120,7 +123,7 @@ function mapToUICourse(course: {
       name: "Echo11 Faculty",
       role: "Curriculum Team",
       avatar:
-        "https://api.dicebear.com/7.x/notionists/svg?seed=echo11&backgroundColor=f1f5f9",
+        "https://api.dicebear.com/7.x/notionists/png?seed=echo11&backgroundColor=f1f5f9",
     },
     modules: mappedModules,
   };
@@ -131,6 +134,7 @@ function mapCourseListItemToUICourse(course: CourseListItem): Course {
     id: course.id,
     slug: course.slug,
     title: course.title,
+    imageUrl: course.imageUrl,
     category: course.category,
     level: course.level,
     durationMinutes: course.durationMinutes,

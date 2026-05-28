@@ -54,7 +54,11 @@ export async function listPublicProjectsService(params: {
     new Map(projects.map((item) => [item.moduleId.toString(), item.moduleId])).values()
   );
   const lessonIds = Array.from(
-    new Map(projects.map((item) => [item.lessonId.toString(), item.lessonId])).values()
+    new Map(
+      projects
+        .filter((item) => item.lessonId && item.lessonId instanceof ObjectId)
+        .map((item) => [item.lessonId!.toString(), item.lessonId as ObjectId])
+    ).values()
   );
 
   const [courseRows, moduleRows, lessonRows] = await Promise.all([
@@ -107,7 +111,9 @@ export async function listPublicProjectsService(params: {
   return projects.map((project) => {
     const foundCourse = courseMap.get(project.courseId.toString()) ?? null;
     const foundModule = moduleMap.get(project.moduleId.toString()) ?? null;
-    const foundLesson = lessonMap.get(project.lessonId.toString()) ?? null;
+    const foundLesson = project.lessonId && project.lessonId instanceof ObjectId
+      ? lessonMap.get(project.lessonId.toString()) ?? null
+      : null;
 
     return {
       id: project._id.toString(),
@@ -166,10 +172,12 @@ export async function getPublicProjectDetailService(params: {
       { tenantId: params.tenantId, _id: project.moduleId },
       { projection: { _id: 1, slug: 1, title: 1 } }
     ),
-    lessonsCollection(db).findOne(
-      { tenantId: params.tenantId, _id: project.lessonId },
-      { projection: { _id: 1, slug: 1, title: 1 } }
-    ),
+    project.lessonId && project.lessonId instanceof ObjectId
+      ? lessonsCollection(db).findOne(
+          { tenantId: params.tenantId, _id: project.lessonId },
+          { projection: { _id: 1, slug: 1, title: 1 } }
+        )
+      : Promise.resolve(null),
     countProjectSubmissionsByStatus(db, {
       tenantId: params.tenantId,
       projectId: project._id,
@@ -265,7 +273,7 @@ export async function submitCurrentActorProject(
     userId: user._id,
     courseId: project.courseId,
     moduleId: project.moduleId,
-    lessonId: project.lessonId,
+    lessonId: project.lessonId instanceof ObjectId ? project.lessonId : undefined,
     projectId: project._id,
     enrollmentId: enrollment._id,
     summary: normalizeOptionalString(params.summary),

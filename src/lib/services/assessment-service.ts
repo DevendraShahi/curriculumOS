@@ -100,12 +100,19 @@ export async function getQuizRuntime(params: {
     throw new Error("QUIZ_NOT_FOUND");
   }
 
-  const lesson = await lessonsCollection(db).findOne({
-    tenantId: params.tenantId,
-    _id: quiz.lessonId,
-    courseId: course._id,
-    isPublished: true,
-  });
+   let lessonIdFilter;
+   if (typeof quiz.lessonId === 'string') {
+     lessonIdFilter = { id: quiz.lessonId };
+   } else {
+     lessonIdFilter = { _id: quiz.lessonId };
+   }
+
+   const lesson = await lessonsCollection(db).findOne({
+     tenantId: params.tenantId,
+     courseId: course._id,
+     ...lessonIdFilter,
+     isPublished: true,
+   });
 
   if (!lesson) {
     throw new Error("LESSON_NOT_FOUND");
@@ -251,12 +258,19 @@ export async function submitQuizAttempt(params: {
     throw new Error("QUIZ_NOT_FOUND");
   }
 
-  const lesson = await lessonsCollection(db).findOne({
-    tenantId: params.actor.tenantId,
-    _id: quiz.lessonId,
-    courseId: course._id,
-    isPublished: true,
-  });
+   let lessonIdFilter;
+   if (typeof quiz.lessonId === 'string') {
+     lessonIdFilter = { id: quiz.lessonId };
+   } else {
+     lessonIdFilter = { _id: quiz.lessonId };
+   }
+
+   const lesson = await lessonsCollection(db).findOne({
+     tenantId: params.actor.tenantId,
+     courseId: course._id,
+     ...lessonIdFilter,
+     isPublished: true,
+   });
 
   if (!lesson) {
     throw new Error("LESSON_NOT_FOUND");

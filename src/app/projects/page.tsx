@@ -18,8 +18,8 @@ async function resolveViewerActor(): Promise<ActorContext | null> {
   }
 }
 
-function formatEstimatedMinutes(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "TBD";
+function formatEstimatedMinutes(value?: number): string {
+  if (value === undefined || !Number.isFinite(value) || value <= 0) return "TBD";
   const hours = Math.floor(value / 60);
   const minutes = value % 60;
   if (hours === 0) return `${minutes}m`;
@@ -68,7 +68,7 @@ export default async function ProjectsPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {project.rubric.slice(0, 3).map((criterion) => (
+              {(project.rubric || []).slice(0, 3).map((criterion) => (
                 <span
                   key={criterion}
                   className="border border-[var(--border)] px-2 py-1 font-mono text-[9px] uppercase tracking-widest text-[var(--muted-foreground)]"

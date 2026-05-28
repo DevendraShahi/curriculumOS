@@ -11,10 +11,19 @@ export async function GET(
 ) {
   try {
     const { courseId } = await context.params;
-    const authResult = await auth();
+    const searchParams = request.nextUrl.searchParams;
+    const requestedTenantId = searchParams.get("tenantId");
+    const hasCookie = Boolean(request.headers.get("cookie"));
+    let authOrgId: string | null = null;
+
+    if (!requestedTenantId && hasCookie) {
+      const authResult = await auth();
+      authOrgId = authResult.orgId ?? null;
+    }
+
     const tenantId =
-      request.nextUrl.searchParams.get("tenantId") ||
-      resolveTenantId(authResult.orgId) ||
+      requestedTenantId ||
+      resolveTenantId(authOrgId) ||
       serverEnv.APP_DEFAULT_TENANT_ID;
 
     const course = await getPublicCourseByIdOrSlug({
@@ -26,7 +35,18 @@ export async function GET(
       return jsonError("COURSE_NOT_FOUND", 404);
     }
 
-    return jsonOk(course);
+    const response = jsonOk(course);
+    const isAnonymousDefaultTenant =
+      !hasCookie &&
+      tenantId === serverEnv.APP_DEFAULT_TENANT_ID &&
+      !requestedTenantId;
+    if (isAnonymousDefaultTenant) {
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=120, stale-while-revalidate=600"
+      );
+    }
+    return response;
   } catch (error) {
     const mapped = mapServiceError(error);
     return jsonError(mapped.code, mapped.status);

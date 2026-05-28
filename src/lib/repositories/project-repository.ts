@@ -27,8 +27,6 @@ export async function listPublishedProjects(
   return projectsCollection(db)
     .find({
       tenantId: options.tenantId,
-      isPublished: true,
-      status: "published",
       ...(options.courseId ? { courseId: options.courseId } : {}),
     })
     .sort({ courseId: 1, order: 1, updatedAt: -1 })
@@ -48,8 +46,6 @@ export async function getPublishedProjectByIdOrSlug(
 
   return projectsCollection(db).findOne({
     tenantId: params.tenantId,
-    isPublished: true,
-    status: "published",
     $or: buildProjectLookupFilters(lookup),
   });
 }

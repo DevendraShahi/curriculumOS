@@ -38,6 +38,8 @@ const curriculumSeedData = [
             durationMinutes: 28,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=IU_qq_c_lKA",
+            videoProvider: "youtube",
           },
         ],
       },
@@ -53,6 +55,8 @@ const curriculumSeedData = [
             durationMinutes: 42,
             contentType: "video",
             isPreview: true,
+            videoUrl: "https://www.youtube.com/watch?v=9zBsdzdE4sM",
+            videoProvider: "youtube",
           },
           {
             slug: "design-tokens",
@@ -84,6 +88,8 @@ const curriculumSeedData = [
             durationMinutes: 39,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=5fb2aPlgoys",
+            videoProvider: "youtube",
           },
           {
             slug: "stateful-ui",
@@ -136,6 +142,8 @@ const curriculumSeedData = [
             durationMinutes: 38,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=-bEzt5ISACA",
+            videoProvider: "youtube",
           },
           {
             slug: "effect-discipline",
@@ -159,6 +167,8 @@ const curriculumSeedData = [
             durationMinutes: 46,
             contentType: "video",
             isPreview: true,
+            videoUrl: "https://www.youtube.com/watch?v=RBM03RihZVs",
+            videoProvider: "youtube",
           },
           {
             slug: "server-client-boundaries",
@@ -198,6 +208,8 @@ const curriculumSeedData = [
             durationMinutes: 36,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=sIVL4JMqRfc",
+            videoProvider: "youtube",
           },
           {
             slug: "quality-and-testing",
@@ -242,6 +254,8 @@ const curriculumSeedData = [
             durationMinutes: 41,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=dK4Yb6-LxAk",
+            videoProvider: "youtube",
           },
           {
             slug: "errors-observability",
@@ -273,6 +287,8 @@ const curriculumSeedData = [
             durationMinutes: 39,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=wVQHzOeNLzw",
+            videoProvider: "youtube",
           },
           {
             slug: "authorization-policies",
@@ -304,6 +320,8 @@ const curriculumSeedData = [
             durationMinutes: 37,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=eB0nUzAI7M8",
+            videoProvider: "youtube",
           },
           {
             slug: "capstone-fullstack",
@@ -348,6 +366,8 @@ const curriculumSeedData = [
             durationMinutes: 33,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=rs0mKyIEdX0",
+            videoProvider: "youtube",
           },
           {
             slug: "complexity-basics",
@@ -379,6 +399,8 @@ const curriculumSeedData = [
             durationMinutes: 38,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=RBSGKlAvoiM",
+            videoProvider: "youtube",
           },
           {
             slug: "priority-queues",
@@ -410,6 +432,8 @@ const curriculumSeedData = [
             durationMinutes: 39,
             contentType: "video",
             isPreview: false,
+            videoUrl: "https://www.youtube.com/watch?v=tWVWeAqZ0WU",
+            videoProvider: "youtube",
           },
           {
             slug: "systems-capstone",

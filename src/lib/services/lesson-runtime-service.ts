@@ -11,17 +11,92 @@ import { getProgressByUserLesson } from "@/lib/repositories/progress-repository"
 import { getMongoDb } from "@/lib/mongodb";
 import { syncActorToUserDocument } from "@/lib/services/user-service";
 import type { ActorContext } from "@/lib/services/auth-context";
+import { z } from "zod";
+
+const SafeStringList = z.preprocess(
+  (val) => {
+    if (Array.isArray(val)) return val.map((item) => String(item ?? "").trim()).filter(Boolean);
+    if (typeof val === "string") return val.trim() ? [val.trim()] : [];
+    return [];
+  },
+  z.array(z.string())
+);
+
+const SafeExternalResource = z.preprocess(
+  (val) => {
+    if (!val || typeof val !== "object") return null;
+    const row = val as Record<string, unknown>;
+    const title = (typeof row.title === "string" && row.title.trim()) || (typeof row.name === "string" && row.name.trim()) || undefined;
+    const url = (typeof row.url === "string" && row.url.trim()) || (typeof row.href === "string" && row.href.trim()) || (typeof row.link === "string" && row.link.trim()) || undefined;
+    if (!title && !url && !row.description) return null;
+    const kindRaw = (typeof row.kind === "string" ? row.kind.trim().toLowerCase() : "") || (typeof row.type === "string" ? row.type.trim().toLowerCase() : "") || "link";
+    return {
+      id: typeof row.id === "string" ? row.id.trim() : undefined,
+      title,
+      url,
+      kind: ["link", "download", "doc", "repo", "video"].includes(kindRaw) ? kindRaw : "link",
+      downloadable: row.downloadable === true || kindRaw === "download" || row.type === "download",
+      fileName: typeof row.fileName === "string" ? row.fileName.trim() : undefined,
+      description: typeof row.description === "string" ? row.description.trim() : undefined,
+    };
+  },
+  z.object({
+    id: z.string().optional(),
+    title: z.string().optional(),
+    url: z.string().optional(),
+    kind: z.enum(["link", "download", "doc", "repo", "video"]).catch("link"),
+    downloadable: z.boolean().catch(false),
+    fileName: z.string().optional(),
+    description: z.string().optional(),
+  }).nullable()
+);
+
+const SafeLessonResources = z.preprocess(
+  (val) => (val && typeof val === "object" ? val : {}),
+  z.object({
+    externalResources: z.array(SafeExternalResource).transform(arr => arr.filter(Boolean)),
+    learnerReference: SafeStringList,
+    resourcePrompts: SafeStringList,
+  })
+);
+
+export const ClientLessonSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  summary: z.string().catch(""),
+  contentType: z.enum(["text", "video", "project", "quiz"]).catch("text"),
+  durationMinutes: z.number().catch(0),
+  isPreview: z.boolean().catch(false),
+  learningObjectives: SafeStringList,
+  outcomes: SafeStringList,
+  instructions: SafeStringList,
+  bodyMarkdown: z.string().catch(""),
+  videoUrl: z.string().optional(),
+  videoProvider: z.string().optional(),
+  starterFiles: z.array(z.any()).catch([]),
+  expectedOutput: SafeStringList,
+  exercises: z.array(z.any()).catch([]),
+  resources: SafeLessonResources,
+  prerequisites: SafeStringList,
+  linkedQuiz: z.object({
+    id: z.string(),
+    slug: z.string(),
+    title: z.string(),
+    questionCount: z.number(),
+  }).nullable(),
+});
 
 function sortLessonsByModuleOrder(params: {
   lessons: Awaited<ReturnType<typeof listPublishedLessonsByCourse>>;
   modules: Awaited<ReturnType<typeof listPublishedModulesByCourse>>;
 }) {
-  const moduleOrder = new Map(
-    params.modules.map((module, index) => [
-      module._id.toString(),
-      module.order ?? index + 1,
-    ])
-  );
+  const moduleOrder = new Map<string, number>();
+  for (const [index, module] of params.modules.entries()) {
+    const order = module.order ?? index + 1;
+    moduleOrder.set(module._id.toString(), order);
+    moduleOrder.set(module.slug, order);
+  }
 
   return params.lessons.slice().sort((a, b) => {
     const moduleDelta =
@@ -125,30 +200,62 @@ export async function getLessonRuntime(params: {
       tenantId: params.tenantId,
       courseId: course._id,
     }),
-    quizzesCollection(db).findOne(
-      {
-        tenantId: params.tenantId,
-        courseId: course._id,
-        lessonId: lesson._id,
-        isPublished: true,
-        status: "published",
-      },
-      {
-        projection: {
-          _id: 1,
-          slug: 1,
-          title: 1,
-          questionCount: 1,
+      quizzesCollection(db).findOne(
+        {
+          tenantId: params.tenantId,
+          courseId: course._id,
+          lessonId: { $in: [lesson.id, lesson._id.toString()].filter(Boolean) },
+          isPublished: true,
         },
-      }
-    ),
+        {
+          projection: {
+            _id: 1,
+            slug: 1,
+            title: 1,
+            questionCount: 1,
+          },
+        }
+      ),
   ]);
 
   const orderedLessons = sortLessonsByModuleOrder({ lessons, modules });
   const lessonIndex = orderedLessons.findIndex((item) => item._id.equals(lesson._id));
   const previous = lessonIndex > 0 ? orderedLessons[lessonIndex - 1] : null;
   const next = lessonIndex >= 0 ? orderedLessons[lessonIndex + 1] ?? null : null;
-  const foundModule = modules.find((item) => item._id.equals(lesson.moduleId)) ?? null;
+  const lessonModuleKey = lesson.moduleId?.toString() ?? "";
+  const foundModule =
+    modules.find((item) => item._id.toString() === lessonModuleKey) ??
+    modules.find((item) => item.slug === lessonModuleKey) ??
+    null;
+
+  const parsedLesson = ClientLessonSchema.parse({
+    id: lesson._id.toString(),
+    slug: lesson.slug,
+    title: lesson.title,
+    summary: lesson.summary ?? lesson.description ?? "",
+    contentType: lesson.contentType,
+    durationMinutes: lesson.durationMinutes,
+    isPreview: lesson.isPreview,
+    learningObjectives: lesson.learningObjectives,
+    outcomes: lesson.outcomes,
+    instructions: lesson.instructions,
+    bodyMarkdown: lesson.bodyMarkdown ?? "",
+    videoUrl: lesson.videoUrl ?? undefined,
+    videoProvider: lesson.videoProvider ?? undefined,
+    starterFiles: lesson.starterFiles ?? [],
+    expectedOutput: lesson.expectedOutput,
+    exercises: lesson.exercises ?? [],
+    resources: lesson.resources,
+    prerequisites: lesson.prerequisites,
+    linkedQuiz: linkedQuiz
+      ? {
+          id: linkedQuiz._id.toString(),
+          slug: linkedQuiz.slug,
+          title: linkedQuiz.title,
+          questionCount: linkedQuiz.questionCount,
+        }
+      : null,
+  });
 
   return {
     tenantId: params.tenantId,
@@ -167,28 +274,7 @@ export async function getLessonRuntime(params: {
           order: foundModule.order,
         }
       : null,
-    lesson: {
-      id: lesson._id.toString(),
-      slug: lesson.slug,
-      title: lesson.title,
-      summary: lesson.summary ?? lesson.description ?? "",
-      contentType: lesson.contentType,
-      durationMinutes: lesson.durationMinutes,
-      isPreview: lesson.isPreview,
-      learningObjectives: lesson.learningObjectives ?? [],
-      instructions: lesson.instructions ?? [],
-      bodyMarkdown: lesson.bodyMarkdown ?? "",
-      starterFiles: lesson.starterFiles ?? [],
-      expectedOutput: lesson.expectedOutput ?? [],
-      linkedQuiz: linkedQuiz
-        ? {
-            id: linkedQuiz._id.toString(),
-            slug: linkedQuiz.slug,
-            title: linkedQuiz.title,
-            questionCount: linkedQuiz.questionCount,
-          }
-        : null,
-    },
+    lesson: parsedLesson,
     navigation: {
       position: lessonIndex >= 0 ? lessonIndex + 1 : 1,
       totalLessons: orderedLessons.length,
@@ -211,7 +297,8 @@ export async function getLessonRuntime(params: {
   };
 }
 
-export function parseCourseObjectId(value: string): ObjectId {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function parseCourseObjectId(value: string): ObjectId {
   if (!ObjectId.isValid(value)) {
     throw new Error("INVALID_COURSE_ID");
   }

@@ -394,6 +394,8 @@ async function seedCourse(db, courseSeed) {
             contentType: lessonSeed.contentType,
             isPreview: lessonSeed.isPreview,
             isPublished: true,
+            videoUrl: lessonSeed.videoUrl ?? null,
+            videoProvider: lessonSeed.videoProvider ?? null,
             learningObjectives: buildLessonObjectives(lessonSeed),
             instructions: buildLessonInstructions(lessonSeed),
             bodyMarkdown: buildLessonBodyMarkdown(

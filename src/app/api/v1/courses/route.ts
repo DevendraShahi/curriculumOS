@@ -18,12 +18,19 @@ function normalizeOptional(value: string | null): string | undefined {
 
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await auth();
     const searchParams = request.nextUrl.searchParams;
+    const requestedTenantId = searchParams.get("tenantId");
+    const hasCookie = Boolean(request.headers.get("cookie"));
+    let authOrgId: string | null = null;
+
+    if (!requestedTenantId && hasCookie) {
+      const authResult = await auth();
+      authOrgId = authResult.orgId ?? null;
+    }
 
     const tenantId =
-      searchParams.get("tenantId") ||
-      resolveTenantId(authResult.orgId) ||
+      requestedTenantId ||
+      resolveTenantId(authOrgId) ||
       serverEnv.APP_DEFAULT_TENANT_ID;
 
     const courses = await listPublicCoursesCatalog({
@@ -37,12 +44,23 @@ export async function GET(request: NextRequest) {
       cursor: parseCourseCursor(searchParams.get("cursor")),
     });
 
-    return jsonOk({
+    const response = jsonOk({
       tenantId,
       items: courses.items,
       count: courses.items.length,
       pageInfo: courses.pageInfo,
     });
+    const isAnonymousDefaultTenant =
+      !hasCookie &&
+      tenantId === serverEnv.APP_DEFAULT_TENANT_ID &&
+      !requestedTenantId;
+    if (isAnonymousDefaultTenant) {
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=120, stale-while-revalidate=600"
+      );
+    }
+    return response;
   } catch (error) {
     const mapped = mapServiceError(error);
     return jsonError(mapped.code, mapped.status);

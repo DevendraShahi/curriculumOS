@@ -12,10 +12,19 @@ export async function GET(
 ) {
   try {
     const { courseId } = await context.params;
-    const authResult = await auth();
+    const searchParams = request.nextUrl.searchParams;
+    const requestedTenantId = searchParams.get("tenantId");
+    const hasCookie = Boolean(request.headers.get("cookie"));
+    const hasTestBypass = Boolean(request.headers.get("x-test-auth-bypass"));
+    let authResult: Awaited<ReturnType<typeof auth>> | null = null;
+
+    if (!requestedTenantId && (hasCookie || hasTestBypass)) {
+      authResult = await auth();
+    }
+
     const tenantId =
-      request.nextUrl.searchParams.get("tenantId") ||
-      resolveTenantId(authResult.orgId) ||
+      requestedTenantId ||
+      resolveTenantId(authResult?.orgId ?? null) ||
       serverEnv.APP_DEFAULT_TENANT_ID;
 
     const course = await getPublicCourseByIdOrSlug({
@@ -49,9 +58,7 @@ export async function GET(
       }
     >();
 
-    const shouldResolveViewer =
-      Boolean(authResult.userId) ||
-      Boolean(request.headers.get("x-test-auth-bypass"));
+    const shouldResolveViewer = Boolean(authResult?.userId) || hasTestBypass;
 
     if (shouldResolveViewer) {
       try {
@@ -98,7 +105,7 @@ export async function GET(
       })),
     }));
 
-    return jsonOk({
+    const response = jsonOk({
       tenantId,
       course: {
         ...course,
@@ -106,6 +113,18 @@ export async function GET(
       },
       viewer,
     });
+    const isAnonymousDefaultTenant =
+      !hasCookie &&
+      !hasTestBypass &&
+      tenantId === serverEnv.APP_DEFAULT_TENANT_ID &&
+      !requestedTenantId;
+    if (isAnonymousDefaultTenant) {
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=60, stale-while-revalidate=300"
+      );
+    }
+    return response;
   } catch (error) {
     const mapped = mapServiceError(error);
     return jsonError(mapped.code, mapped.status);

@@ -12,6 +12,7 @@ export type DashboardTopCourse = {
   id: string;
   slug: string;
   title: string;
+  imageUrl: string | null;
   summary: string;
   category: string;
   level: "beginner" | "intermediate" | "advanced" | null;
@@ -105,6 +106,7 @@ export async function getDashboardHomeData(params: {
       _id: 1,
       slug: 1,
       title: 1,
+      imageUrl: 1,
       summary: 1,
       category: 1,
       level: 1,
@@ -152,6 +154,7 @@ export async function getDashboardHomeData(params: {
       id: course._id.toString(),
       slug: course.slug,
       title: course.title,
+      imageUrl: course.imageUrl ?? null,
       summary: course.summary,
       category: course.category ?? "",
       level: course.level ?? null,

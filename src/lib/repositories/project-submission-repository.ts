@@ -12,7 +12,7 @@ export async function createProjectSubmission(
     userId: ObjectId;
     courseId: ObjectId;
     moduleId: ObjectId;
-    lessonId: ObjectId;
+    lessonId?: ObjectId | string;
     projectId: ObjectId;
     enrollmentId?: ObjectId | null;
     summary?: string;

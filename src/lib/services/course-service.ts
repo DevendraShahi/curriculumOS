@@ -17,6 +17,7 @@ export type CourseListItem = {
   title: string;
   summary: string;
   description: string;
+  imageUrl: string | null;
   category: string;
   level: "beginner" | "intermediate" | "advanced" | null;
   tags: string[];
@@ -67,6 +68,7 @@ function toCourseListItem(course: {
   title: string;
   summary: string;
   description?: string;
+  imageUrl?: string;
   category?: string;
   level?: "beginner" | "intermediate" | "advanced";
   tags?: string[];
@@ -84,6 +86,7 @@ function toCourseListItem(course: {
     title: course.title,
     summary: course.summary,
     description: course.description ?? "",
+    imageUrl: course.imageUrl ?? null,
     category: course.category ?? "",
     level: course.level ?? null,
     tags: course.tags ?? [],
@@ -244,6 +247,7 @@ export async function getPublicCourseByIdOrSlug(params: {
     title: course.title,
     summary: course.summary,
     description: course.description ?? "",
+    imageUrl: course.imageUrl ?? null,
     category: course.category ?? "",
     level: course.level ?? null,
     tags: course.tags ?? [],
@@ -255,7 +259,18 @@ export async function getPublicCourseByIdOrSlug(params: {
     publishedAt: course.publishedAt?.toISOString() ?? null,
     updatedAt: course.updatedAt.toISOString(),
     modules: modules.map((module) => {
-      const moduleLessons = lessonsByModule.get(module._id.toString()) ?? [];
+      const moduleLessonsById = lessonsByModule.get(module._id.toString()) ?? [];
+      const moduleLessonsBySlug = lessonsByModule.get(module.slug) ?? [];
+      const moduleLessonsMap = new Map<string, (typeof lessons)[number]>();
+      for (const lesson of moduleLessonsById) {
+        moduleLessonsMap.set(lesson._id.toString(), lesson);
+      }
+      for (const lesson of moduleLessonsBySlug) {
+        moduleLessonsMap.set(lesson._id.toString(), lesson);
+      }
+      const moduleLessons = Array.from(moduleLessonsMap.values()).sort(
+        (a, b) => a.order - b.order
+      );
       return {
         id: module._id.toString(),
         slug: module.slug,

@@ -307,6 +307,14 @@ export async function enrollCurrentActor(
     throw new Error("COURSE_NOT_ENROLLABLE");
   }
 
+  const planHierarchy = { free: 0, pro: 1, teams: 2 };
+  const userPlanValue = planHierarchy[user.plan ?? "free"];
+  const courseTierValue = planHierarchy[course.tier ?? "free"];
+
+  if (userPlanValue < courseTierValue) {
+    throw new Error("INSUFFICIENT_PLAN_TIER");
+  }
+
   const enrollment = await upsertEnrollment(db, {
     tenantId: actor.tenantId,
     userId: user._id,

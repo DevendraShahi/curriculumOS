@@ -256,7 +256,7 @@ export default async function CourseDetailPage({
         <div className="mt-12 flex items-center gap-4 border border-[var(--border)] p-4 sm:max-w-[340px]">
           <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
             <Image
-              src="https://api.dicebear.com/7.x/notionists/svg?seed=echo11&backgroundColor=f1f5f9"
+              src="https://api.dicebear.com/7.x/notionists/png?seed=echo11&backgroundColor=f1f5f9"
               alt="Echo11 Faculty"
               width={40}
               height={40}
@@ -378,23 +378,35 @@ export default async function CourseDetailPage({
                 : `${resolvedCourse.lessonsCount} lessons`}
             </p>
           </div>
-          {!isAuthenticated ||
-          enrollmentStatus === "active" ||
-          enrollmentStatus === "paused" ||
-          enrollmentStatus === "completed" ? (
-            <Link
-              href={ctaHref}
-              className="flex h-[42px] items-center justify-center bg-[var(--accent)] px-8 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
-            >
-              {ctaLabel}
-            </Link>
-          ) : (
-            <form action={enrollAction}>
-              <button className="flex h-[42px] items-center justify-center bg-[var(--accent)] px-8 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2">
+          <div className="flex flex-col items-end gap-1.5">
+            {!isAuthenticated ||
+            enrollmentStatus === "active" ||
+            enrollmentStatus === "paused" ||
+            enrollmentStatus === "completed" ? (
+              <Link
+                href={ctaHref}
+                className="flex h-[42px] items-center justify-center bg-[var(--accent)] px-8 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
+              >
                 {ctaLabel}
-              </button>
-            </form>
-          )}
+              </Link>
+            ) : (
+              <form action={enrollAction}>
+                <button className="flex h-[42px] items-center justify-center bg-[var(--accent)] px-8 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2">
+                  {ctaLabel}
+                </button>
+              </form>
+            )}
+            {enrollmentStatus === "not_enrolled" && isAuthenticated && (
+              <Link href="/terms" className="font-mono text-[9px] uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
+                *Terms and conditions apply
+              </Link>
+            )}
+            {(!isAuthenticated) && (
+               <Link href="/terms" className="font-mono text-[9px] uppercase tracking-widest text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
+                 *Terms and conditions apply
+               </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -71,9 +71,8 @@ export async function listCourses(
   }
 
   const sortConfig = resolveSort(options.sort);
-  if (sortConfig.field === "publishedAt") {
-    filter.publishedAt = { $type: "date" };
-  }
+  // Keep published courses visible even when legacy records are missing publishedAt.
+  // We still sort by publishedAt first, but we no longer exclude null/absent values.
 
   if (options.cursor) {
     const cursorFilter: Filter<CourseDocument> = {

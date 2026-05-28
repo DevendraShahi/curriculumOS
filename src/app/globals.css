@@ -6,18 +6,41 @@
 .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 
 :root {
-  --background: #f6f4f1;
-  --surface: #fbfaf8;
-  --surface-2: #f1efeb;
-  --border: #ddd8d2;
+  --background: #fafafa;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-2: rgba(240, 240, 245, 0.8);
+  --border: rgba(0, 0, 0, 0.1);
   --foreground: #111111;
   --muted: #666666;
-  --muted-foreground: #666666;
-  --faint: #9b9b9b;
-  --accent: #1d5cff;
-  --accent-soft: #dbe5ff;
-  --font-geist-sans: "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-geist-mono: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  --muted-foreground: #555555;
+  --faint: #e5e5e5;
+  --accent: #0077ff;
+  --accent-soft: rgba(0, 119, 255, 0.15);
+  --accent-2: #8A2BE2;
+  --font-geist-sans: var(--font-space-grotesk), "Helvetica Neue", Arial, sans-serif;
+  --font-geist-mono: var(--font-jetbrains-mono), Menlo, Monaco, Consolas, monospace;
+  --code-bg: #f1f5f9;
+  --code-fg: #0f172a;
+  --code-inline-bg: #e2e8f0;
+  --code-inline-fg: #0f172a;
+}
+
+.dark {
+  --background: #000000;
+  --surface: #000000;
+  --surface-2: #050505;
+  --border: rgba(255, 255, 255, 0.1);
+  --foreground: #f4f4f5;
+  --muted: #a1a1aa;
+  --muted-foreground: #71717a;
+  --faint: rgba(255, 255, 255, 0.05);
+  --accent: #0077ff;
+  --accent-soft: rgba(0, 119, 255, 0.15);
+  --accent-2: #8A2BE2;
+  --code-bg: #1e293b;
+  --code-fg: #e2e8f0;
+  --code-inline-bg: #334155;
+  --code-inline-fg: #f8fafc;
 }
 
 @theme inline {
@@ -31,6 +54,31 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+/* Mesh Background Animation */
+@keyframes meshGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-mesh {
+  background: radial-gradient(circle at 15% 50%, rgba(138, 43, 226, 0.15), transparent 25%),
+              radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.15), transparent 25%),
+              radial-gradient(circle at 50% 80%, rgba(138, 43, 226, 0.1), transparent 25%);
+  background-size: 200% 200%;
+  animation: meshGradient 15s ease infinite;
+}
+
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 1rem;
 }
 
 @keyframes marquee {
@@ -144,4 +192,222 @@ body {
 
 .cl-footerActionLink {
   color: var(--accent) !important;
+}
+
+/* Sandpack Brutalist Overrides */
+.sandpack-override .sp-layout {
+  border-radius: 0 !important;
+  border: none !important;
+}
+.sandpack-override .sp-editor,
+.sandpack-override .sp-preview,
+.sandpack-override .sp-console {
+  border-radius: 0 !important;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Custom Animated Toggle */
+.toggle-container {
+  --active-color: var(--accent);
+  --inactive-color: var(--border);
+  position: relative;
+  aspect-ratio: 292 / 142;
+  height: 1.25em;
+}
+
+.toggle-input {
+  appearance: none;
+  margin: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.toggle {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.toggle-background {
+  fill: var(--inactive-color);
+  transition: fill .4s;
+}
+
+.toggle-input:checked + .toggle .toggle-background {
+  fill: var(--active-color);
+}
+
+.toggle-circle-center {
+  transform-origin: center;
+  transition: transform .6s;
+}
+
+.toggle-input:checked + .toggle .toggle-circle-center {
+  transform: translateX(150px);
+}
+
+.toggle-circle {
+  transform-origin: center;
+  transition: transform .45s;
+  backface-visibility: hidden;
+}
+
+.toggle-circle.left {
+  transform: scale(1);
+}
+
+.toggle-input:checked + .toggle .toggle-circle.left {
+  transform: scale(0);
+}
+
+.toggle-circle.right {
+  transform: scale(0);
+}
+
+.toggle-input:checked + .toggle .toggle-circle.right {
+  transform: scale(1);
+}
+
+.toggle-icon {
+  transition: fill .4s;
+}
+
+.toggle-icon.on {
+  fill: var(--inactive-color);
+}
+
+.toggle-input:checked + .toggle .toggle-icon.on {
+  fill: #fff;
+}
+
+.toggle-icon.off {
+  fill: var(--surface);
+}
+
+.toggle-input:checked + .toggle .toggle-icon.off {
+  fill: var(--active-color);
+}
+
+/* Media Upload Input Box */
+.messageBox {
+  width: fit-content;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface-2);
+  padding: 0 15px;
+  border-radius: 0px;
+  border: 1px solid var(--border);
+}
+.messageBox:focus-within {
+  border: 1px solid var(--accent);
+}
+.fileUploadWrapper {
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-sans);
+}
+
+.fileUploadWrapper .file-input-hidden {
+  display: none;
+}
+.fileUploadWrapper label {
+  cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.fileUploadWrapper label svg {
+  height: 18px;
+}
+.fileUploadWrapper label svg path,
+.fileUploadWrapper label svg circle {
+  transition: all 0.3s;
+}
+.fileUploadWrapper label:hover svg path {
+  stroke: var(--foreground);
+}
+.fileUploadWrapper label:hover svg circle {
+  stroke: var(--foreground);
+  fill: var(--faint);
+}
+.fileUploadWrapper label:hover .tooltip {
+  display: block;
+  opacity: 1;
+}
+.fileUploadWrapper .tooltip {
+  position: absolute;
+  top: -40px;
+  display: none;
+  opacity: 0;
+  color: var(--background);
+  font-size: 10px;
+  white-space: nowrap;
+  background-color: var(--foreground);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 0px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.596);
+  transition: all 0.3s;
+  font-family: var(--font-geist-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.messageBox .messageInput {
+  width: 250px;
+  height: 100%;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  padding-left: 10px;
+  color: var(--foreground);
+  font-size: 14px;
+}
+.messageBox .messageInput:focus ~ .sendButton svg path,
+.messageBox .messageInput:valid ~ .sendButton svg path {
+  fill: var(--faint);
+  stroke: var(--foreground);
+}
+.messageBox .sendButton {
+  width: fit-content;
+  height: 100%;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.messageBox .sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.messageBox .sendButton svg {
+  height: 18px;
+  transition: all 0.3s;
+}
+.messageBox .sendButton svg path {
+  transition: all 0.3s;
+}
+.messageBox .sendButton:hover:not(:disabled) svg path {
+  fill: var(--faint);
+  stroke: var(--foreground);
 }

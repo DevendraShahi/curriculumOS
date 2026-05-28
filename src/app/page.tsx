@@ -16,7 +16,7 @@ import {
 } from "@/lib/services/progress-metrics-service";
 import {
   COURSE_CARD_IMAGE_SIZES,
-  getCourseCardImage,
+  resolveCourseCardImage,
 } from "@/lib/course-card-image";
 import { getDashboardHomeData } from "@/lib/services/dashboard-home-service";
 import { serverEnv } from "@/lib/server-env";
@@ -73,6 +73,10 @@ function formatCourseLevel(
   if (value === "beginner") return "Beginner";
   if (value === "intermediate") return "Intermediate";
   return "Advanced";
+}
+
+function isRemoteImageSrc(src: string): boolean {
+  return src.startsWith("http://") || src.startsWith("https://");
 }
 
 async function getViewerContext(): Promise<ViewerContext | null> {
@@ -275,8 +279,12 @@ export default async function Home() {
   ]);
   const featuredCourse = dashboardHome.topCourses[0] ?? null;
   const secondaryCourses = dashboardHome.topCourses.slice(1, 5);
+  const hasSecondaryCourses = secondaryCourses.length > 0;
   const featuredCourseImage = featuredCourse
-    ? getCourseCardImage(featuredCourse.slug)
+    ? resolveCourseCardImage({
+        slug: featuredCourse.slug,
+        imageUrl: featuredCourse.imageUrl,
+      })
     : null;
 
   const learningStages = [
@@ -399,7 +407,7 @@ export default async function Home() {
 
               <Link
                 href={activeCourse.ctaHref}
-                className="mt-4 inline-flex h-12 w-fit items-center gap-3 bg-[var(--foreground)] px-8 text-sm font-medium text-[var(--surface)] transition-all hover:bg-[var(--accent)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                className="mt-4 inline-flex h-12 w-fit items-center gap-3 bg-[var(--foreground)] px-8 text-sm font-medium text-[var(--background)] transition-all hover:bg-[var(--accent)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               >
                 {activeCourse.ctaLabel} <span aria-hidden>→</span>
               </Link>
@@ -494,21 +502,37 @@ export default async function Home() {
         </div>
 
         {featuredCourse ? (
-          <div className="grid grid-cols-1 gap-px bg-[var(--border)] lg:grid-cols-[1.4fr_1fr_1fr]">
+          <div
+            className={`grid grid-cols-1 gap-px ${
+              hasSecondaryCourses ? "bg-[var(--border)]" : "bg-[var(--background)]"
+            } lg:grid-cols-[1.4fr_1fr_1fr]`}
+          >
             <Link
               href={`/curriculum/${featuredCourse.slug}`}
               className="group flex min-h-[360px] cursor-pointer flex-col bg-[var(--surface)] transition-colors duration-200 hover:bg-[#f8fafc] dark:hover:bg-white/[0.02]"
             >
               <div className="relative h-52 overflow-hidden bg-[var(--surface-2)]">
                 {featuredCourseImage ? (
-                  <Image
-                    src={featuredCourseImage.src}
-                    alt={`${featuredCourse.title} course cover`}
-                    fill
-                    sizes={COURSE_CARD_IMAGE_SIZES.homeFeatured}
-                    style={{ objectPosition: featuredCourseImage.objectPosition }}
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  />
+                  isRemoteImageSrc(featuredCourseImage.src) ? (
+                    <Image
+                      unoptimized
+                      src={featuredCourseImage.src}
+                      alt={`${featuredCourse.title} course cover`}
+                      fill
+                      sizes={COURSE_CARD_IMAGE_SIZES.homeFeatured}
+                      style={{ objectPosition: featuredCourseImage.objectPosition }}
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  ) : (
+                    <Image
+                      src={featuredCourseImage.src}
+                      alt={`${featuredCourse.title} course cover`}
+                      fill
+                      sizes={COURSE_CARD_IMAGE_SIZES.homeFeatured}
+                      style={{ objectPosition: featuredCourseImage.objectPosition }}
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  )
                 ) : null}
               </div>
 
@@ -557,7 +581,10 @@ export default async function Home() {
 
             <div className="contents lg:col-span-2 lg:grid lg:grid-cols-[1fr_1fr] gap-px bg-[var(--border)]">
               {secondaryCourses.map((course) => {
-                const courseImage = getCourseCardImage(course.slug);
+                const courseImage = resolveCourseCardImage({
+                  slug: course.slug,
+                  imageUrl: course.imageUrl,
+                });
                 return (
                 <Link
                   href={`/curriculum/${course.slug}`}
@@ -565,14 +592,26 @@ export default async function Home() {
                   className="group flex cursor-pointer flex-col justify-between bg-[var(--surface)] transition-colors duration-200 hover:bg-[#f8fafc] dark:hover:bg-white/[0.02]"
                 >
                   <div className="relative h-36 overflow-hidden bg-[var(--surface-2)]">
-                    <Image
-                      src={courseImage.src}
-                      alt={`${course.title} course cover`}
-                      fill
-                      sizes={COURSE_CARD_IMAGE_SIZES.homeSecondary}
-                      style={{ objectPosition: courseImage.objectPosition }}
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    />
+                    {isRemoteImageSrc(courseImage.src) ? (
+                      <Image
+                        unoptimized
+                        src={courseImage.src}
+                        alt={`${course.title} course cover`}
+                        fill
+                        sizes={COURSE_CARD_IMAGE_SIZES.homeSecondary}
+                        style={{ objectPosition: courseImage.objectPosition }}
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      />
+                    ) : (
+                      <Image
+                        src={courseImage.src}
+                        alt={`${course.title} course cover`}
+                        fill
+                        sizes={COURSE_CARD_IMAGE_SIZES.homeSecondary}
+                        style={{ objectPosition: courseImage.objectPosition }}
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      />
+                    )}
                   </div>
 
                   <div className="flex grow flex-col p-6 sm:p-8">
