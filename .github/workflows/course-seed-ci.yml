@@ -31,9 +31,14 @@ jobs:
         run: npm run test:integration:course-seed-payload
 
       - name: Dry promote (requires env)
-        if: ${{ secrets.MONGODB_URI != '' && secrets.MONGODB_DB_NAME != '' }}
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
           APP_DEFAULT_TENANT_ID: public
-        run: npm run db:seed:course:promote:dry
+        run: |
+          if [ -z "$MONGODB_URI" ] || [ -z "$MONGODB_DB_NAME" ]; then
+            echo "Skipping dry promote: missing MONGODB_URI or MONGODB_DB_NAME secret."
+            exit 0
+          fi
+
+          npm run db:seed:course:promote:dry
