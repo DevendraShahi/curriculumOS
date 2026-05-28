@@ -18,7 +18,10 @@ import {
   COURSE_CARD_IMAGE_SIZES,
   resolveCourseCardImage,
 } from "@/lib/course-card-image";
-import { getDashboardHomeData } from "@/lib/services/dashboard-home-service";
+import {
+  getDashboardHomeData,
+  type DashboardHomeData,
+} from "@/lib/services/dashboard-home-service";
 import { serverEnv } from "@/lib/server-env";
 import { syncActorToUserDocument } from "@/lib/services/user-service";
 import { RequestAccessCta } from "@/app/_components/request-access-cta";
@@ -77,6 +80,32 @@ function formatCourseLevel(
 
 function isRemoteImageSrc(src: string): boolean {
   return src.startsWith("http://") || src.startsWith("https://");
+}
+
+function getFallbackDashboardHomeData(tenantId: string): DashboardHomeData {
+  return {
+    tenantId,
+    generatedAt: new Date().toISOString(),
+    topCourses: [],
+    moduleRegistry: [],
+    topology: {
+      activeNodes: 0,
+      latencyMs: 0,
+    },
+    statusStrip: [
+      { label: "COURSES", value: "Offline", ok: false },
+      { label: "MODULES", value: "Offline", ok: false },
+      { label: "LESSONS", value: "Offline", ok: false },
+    ],
+  };
+}
+
+async function getSafeDashboardHomeData(tenantId: string): Promise<DashboardHomeData> {
+  try {
+    return await getDashboardHomeData({ tenantId });
+  } catch {
+    return getFallbackDashboardHomeData(tenantId);
+  }
 }
 
 async function getViewerContext(): Promise<ViewerContext | null> {
@@ -270,12 +299,11 @@ async function getWeeklyMetrics(
 
 export default async function Home() {
   const viewer = await getViewerContext();
+  const tenantId = viewer?.actor.tenantId ?? serverEnv.APP_DEFAULT_TENANT_ID;
   const [weeklyMetrics, activeCourse, dashboardHome] = await Promise.all([
     getWeeklyMetrics(viewer),
     getActiveCourseData(viewer),
-    getDashboardHomeData({
-      tenantId: viewer?.actor.tenantId ?? serverEnv.APP_DEFAULT_TENANT_ID,
-    }),
+    getSafeDashboardHomeData(tenantId),
   ]);
   const featuredCourse = dashboardHome.topCourses[0] ?? null;
   const secondaryCourses = dashboardHome.topCourses.slice(1, 5);

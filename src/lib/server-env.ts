@@ -5,9 +5,9 @@ type ServerEnv = {
   MONGODB_URI: string;
   MONGODB_DB_NAME: string;
   PROGRESS_WRITE_RATE_LIMIT_PER_MINUTE: number;
-  CLOUDINARY_CLOUD_NAME: string;
-  CLOUDINARY_API_KEY: string;
-  CLOUDINARY_API_SECRET: string;
+  CLOUDINARY_CLOUD_NAME: string | null;
+  CLOUDINARY_API_KEY: string | null;
+  CLOUDINARY_API_SECRET: string | null;
   CLOUDINARY_UPLOAD_FOLDER: string;
 };
 
@@ -28,6 +28,12 @@ function parsePositiveInteger(value: string | undefined, fallback: number): numb
   return parsed;
 }
 
+function optionalEnv(name: keyof ServerEnv): string | null {
+  const value = process.env[name];
+  if (!value) return null;
+  return value;
+}
+
 export const serverEnv: ServerEnv = {
   APP_DEFAULT_TENANT_ID: process.env.APP_DEFAULT_TENANT_ID || "public",
   MONGODB_URI: requireEnv("MONGODB_URI"),
@@ -36,9 +42,9 @@ export const serverEnv: ServerEnv = {
     process.env.PROGRESS_WRITE_RATE_LIMIT_PER_MINUTE,
     30
   ),
-  CLOUDINARY_CLOUD_NAME: requireEnv("CLOUDINARY_CLOUD_NAME"),
-  CLOUDINARY_API_KEY: requireEnv("CLOUDINARY_API_KEY"),
-  CLOUDINARY_API_SECRET: requireEnv("CLOUDINARY_API_SECRET"),
+  CLOUDINARY_CLOUD_NAME: optionalEnv("CLOUDINARY_CLOUD_NAME"),
+  CLOUDINARY_API_KEY: optionalEnv("CLOUDINARY_API_KEY"),
+  CLOUDINARY_API_SECRET: optionalEnv("CLOUDINARY_API_SECRET"),
   CLOUDINARY_UPLOAD_FOLDER:
     process.env.CLOUDINARY_UPLOAD_FOLDER || "curriculum-os",
 };
